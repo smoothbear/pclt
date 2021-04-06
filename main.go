@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/otiai10/copy"
+	"io/ioutil"
 	"log"
 	"os"
 	user "os/user"
@@ -18,6 +20,7 @@ type pclt struct{}
 
 type saveArgs struct {
 	cmd *flag.FlagSet
+	user *user.User
 
 	env  bool
 	name string
@@ -30,7 +33,6 @@ func (s *saveArgs) init() {
 
 	_ = s.cmd.Parse(os.Args[2:])
 
-	s.path = s.cmd.Arg(0)
 	if s.path == "" {
 		path, _ := os.Getwd()
 		s.path = path
@@ -55,20 +57,26 @@ func (s *saveArgs) defaultSave() {
 
 type createArgs struct {
 	cmd *flag.FlagSet
+	user *user.User
 
 	project string
 	path    string
 }
 
 func (c *createArgs) defaultCreate() {
-	currentUser, err := user.Current()
-	if err != nil {
-		log.Fatalf("Error: %v", currentUser)
-	}
-
-	err = copy.Copy(currentUser.HomeDir+projectDir+c.project, c.path+c.project)
+	err := copy.Copy(c.user.HomeDir+projectDir+c.project, c.path+c.project)
 	if err != nil {
 		log.Fatalf("Error: %v", err)
+	}
+}
+
+func (c *createArgs) springCreate() {
+	var m model
+	m.initFirst()
+	p := tea.NewProgram(m)
+	if err := p.Start(); err != nil {
+		fmt.Printf("Alas, there's been an error: %v", err)
+		os.Exit(1)
 	}
 }
 
@@ -85,9 +93,32 @@ func (c *createArgs) init() {
 	}
 }
 
+type listArgs struct {
+	user *user.User
+}
+
+func (l *listArgs) projectList() {
+	files, err := ioutil.ReadDir(l.user.HomeDir + projectDir)
+	if err != nil {
+		log.Fatalf("Error: %v", err)
+	}
+
+	fmt.Printf("NAME                         SAVED_DATE         SIZE\n")
+
+	for _, f := range files {
+		y, m, d := f.ModTime().Date()
+		fmt.Printf("%-28s %s           %d\n", f.Name(), fmt.Sprintf("%d/%d/%d", y, m, d), f.Size())
+	}
+}
+
 func (p *pclt) init() {
 	createCmd := flag.NewFlagSet("create", flag.ExitOnError)
 	saveCmd := flag.NewFlagSet("save", flag.ExitOnError)
+
+	currentUser, err := user.Current()
+	if err != nil {
+		log.Fatalf("Error: %v", currentUser)
+	}
 
 	if len(os.Args) < 2 {
 		log.Fatal("expected subcommands.")
@@ -97,9 +128,12 @@ func (p *pclt) init() {
 	case "create":
 		var create createArgs
 		create.cmd = createCmd
+		create.user = currentUser
 		create.init()
 
 		switch create.project {
+		case "spring-init":
+			create.springCreate()
 		default:
 			create.defaultCreate()
 		}
@@ -107,8 +141,14 @@ func (p *pclt) init() {
 	case "save":
 		var save saveArgs
 		save.cmd = saveCmd
+		save.user = currentUser
 		save.init()
 		save.defaultSave()
+
+	case "list":
+		var list listArgs
+		list.user = currentUser
+		list.projectList()
 
 	case "-help":
 		help()
@@ -117,6 +157,12 @@ func (p *pclt) init() {
 		log.Fatalln("Error: No such subcommand does not exist")
 	}
 }
+
+func main() {
+	var p pclt
+	p.init()
+}
+
 
 func help() {
 	fmt.Println("List of commands")
@@ -132,9 +178,4 @@ func help() {
 	fmt.Println("\t\t - saving projects what on this directory.")
 	fmt.Println("\tExample usage")
 	fmt.Println("\t\t- pclt save -e -name elephant ./")
-}
-
-func main() {
-	var p pclt
-	p.init()
 }
