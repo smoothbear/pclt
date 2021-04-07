@@ -88,8 +88,6 @@ func (m *model) initMenu() {
 	for _, choice := range steps[m.step] {
 		m.choices = append(m.choices, choice)
 	}
-
-	m.step++
 }
 
 
@@ -115,6 +113,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter", " ":
 			m.selected[m.cursor] = struct{}{}
 
+			print(m.step)
 			if m.step > 2 && m.step < 8 {
 				results[m.step] = m.textInput.Value()
 				if results[m.step] == "" {
@@ -123,12 +122,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				delete(m.selected, m.cursor)
 			} else if m.step > 10 {
-				println(results)
+				for i, result := range results {
+					print(i, ":", result, "\n")
+				}
 			} else {
 				results[m.step] = steps[m.step][m.cursor]
 				delete(m.selected, m.cursor)
 			}
 
+			m.step++
 			m.initMenu()
 		}
 
