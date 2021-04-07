@@ -3,12 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/otiai10/copy"
 	"io/ioutil"
 	"log"
 	"os"
 	user "os/user"
+	tea "github.com/charmbracelet/bubbletea"
 	"path/filepath"
 )
 
@@ -72,7 +72,7 @@ func (c *createArgs) defaultCreate() {
 
 func (c *createArgs) springCreate() {
 	var m model
-	m.initFirst()
+	m.initMenu()
 	p := tea.NewProgram(m)
 	if err := p.Start(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
