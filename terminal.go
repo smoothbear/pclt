@@ -167,7 +167,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursor++
 			}
 
-		case "enter", " ":
+		case "enter":
 			m.selected[m.cursor] = struct{}{}
 
 			if m.step > 2 && m.step < 8 {
@@ -253,7 +253,10 @@ func (m model) downloadFile() {
 			results[0], results[1], results[2], results[4], results[3], results[4], results[5], strings.Replace(results[6], " ", "%20", -1), results[7], results[8], results[9],
 		)
 
-	println(url)
+	fmt.Printf("Type: %s\nLanguage: %s\nBoot version: %s\nGroup id: %s\nArtifact id: %s\nname: %s\ndescription: %s\npackage name: %s\npackaging: %s\njava version: %s\n",
+		results[0], results[1], results[2], results[3], results[4], results[5], results[6], results[7], results[8], results[9])
+
+	fmt.Println("\n--------------------------------------")
 
 	resp, err := http.Get(url)
 	if err != nil {
