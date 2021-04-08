@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/artdarek/go-unzip"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/dustin/go-humanize"
 	"io"
@@ -276,6 +277,13 @@ func (m model) downloadFile() {
 	out.Close()
 
 	if err = os.Rename(filepath + "/spring.zip" + ".tmp", filepath + "/spring.zip"); err != nil {
+		log.Fatalf("Error: %v", err)
+	}
+
+	uz := unzip.New(filepath + "/spring.zip", filepath + "/spring")
+	err = uz.Extract()
+
+	if err != nil {
 		log.Fatalf("Error: %v", err)
 	}
 }
