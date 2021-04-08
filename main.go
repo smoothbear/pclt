@@ -78,6 +78,7 @@ func (c *createArgs) springCreate() {
 		fmt.Printf("Alas, there's been an error: %v", err)
 		os.Exit(1)
 	}
+	m.downloadFile()
 }
 
 func (c *createArgs) init() {

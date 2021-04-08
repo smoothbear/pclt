@@ -4,6 +4,12 @@ import (
 	"fmt"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/dustin/go-humanize"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"strings"
 )
 
 type model struct {
@@ -77,11 +83,11 @@ var steps = map[int][]selector{
 	*/
 	8: {
 		0: {
-			choice: "JAR",
+			choice: "Jar",
 			value: "jar",
 		},
 		1: {
-			choice: "WAR",
+			choice: "War",
 			value: "war",
 		},
 	},
@@ -102,8 +108,9 @@ var steps = map[int][]selector{
 }
 
 var guide = map[int]string{
-	1: "Select project type",
-	2: "Please select a language to use",
+	0: "Select project type",
+	1: "Please select a language to use",
+	2: "Please select spring version to use",
 	3: "Please enter your group name",
 	4: "Please enter your group artifact name",
 	5: "Please enter your project name",
@@ -163,7 +170,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter", " ":
 			m.selected[m.cursor] = struct{}{}
 
-			print(m.step)
 			if m.step > 2 && m.step < 8 {
 				results[m.step] = m.textInput.Value()
 				if results[m.step] == "" {
@@ -172,9 +178,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				delete(m.selected, m.cursor)
 			} else if m.step > 9 {
-				for i, result := range results {
-					print(i, ":", result, "\n")
-				}
+				return m, tea.Quit
 			} else {
 				results[m.step] = steps[m.step][m.cursor].value
 				delete(m.selected, m.cursor)
@@ -218,4 +222,57 @@ func (m model) View() string {
 	s += "\nPress ctrl+c to quit.\n"
 
 	return s
+}
+
+type writeCounter struct {
+	Total uint64
+}
+
+func (wc *writeCounter) printProgress() {
+	fmt.Printf("\r%s", strings.Repeat(" ", 35))
+	fmt.Printf("\rDownloading... %s complete", humanize.Bytes(wc.Total))
+}
+
+func (wc *writeCounter) Write(p []byte) (int, error) {
+	n := len(p)
+	wc.Total += uint64(n)
+	wc.printProgress()
+	return n, nil
+}
+
+func (m model) downloadFile() {
+
+	filepath, _ := os.Getwd()
+
+	out, err := os.Create(filepath + "/spring.zip" + ".tmp")
+	if err != nil {
+		log.Fatalf("Error: %v", err)
+	}
+
+	url := fmt.Sprintf("https://start.spring.io/starter.zip?type=%s&language=%s&bootVersion=%s&baseDir=%s&groupId=%s&artifactId=%s&name=%s&description=%s&packageName=%s&packaging=%s&javaVersion=%s",
+			results[0], results[1], results[2], results[4], results[3], results[4], results[5], strings.Replace(results[6], " ", "%20", -1), results[7], results[8], results[9],
+		)
+
+	println(url)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		out.Close()
+		log.Fatalf("Error: %v", err)
+	}
+	defer resp.Body.Close()
+
+	counter := &writeCounter{}
+	if _, err = io.Copy(out, io.TeeReader(resp.Body, counter)); err != nil {
+		out.Close()
+		log.Fatalf("Error: %v", err)
+	}
+
+	fmt.Print("\n")
+
+	out.Close()
+
+	if err = os.Rename(filepath + "/spring.zip" + ".tmp", filepath + "/spring.zip"); err != nil {
+		log.Fatalf("Error: %v", err)
+	}
 }
