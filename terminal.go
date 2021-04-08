@@ -286,4 +286,9 @@ func (m model) downloadFile() {
 	if err != nil {
 		log.Fatalf("Error: %v", err)
 	}
+
+	err = os.Remove(filepath + "/spring.zip")
+	if err != nil {
+		log.Fatalf("Error: %v", err)
+	}
 }
