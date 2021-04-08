@@ -131,18 +131,7 @@ func (r *removeArgs) init() {
 func (r removeArgs) projectRemove() {
 	path := r.user.HomeDir + projectDir + r.project
 
-	dirRead, _ := os.Open(path)
-	dirFiles, _ := dirRead.Readdir(0)
-
-	for index := range dirFiles {
-		file := dirFiles[index]
-
-		name := file.Name()
-		fullPath := path + "/" + name
-
-		os.Remove(fullPath)
-	}
-	err := os.Remove(r.user.HomeDir + projectDir + r.project)
+	err := os.RemoveAll(path)
 	if err != nil {
 		log.Fatalf("Error: %v", err)
 	}
