@@ -3,12 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/otiai10/copy"
 	"io/ioutil"
 	"log"
 	"os"
 	user "os/user"
-	tea "github.com/charmbracelet/bubbletea"
 	"path/filepath"
 )
 
@@ -19,7 +19,7 @@ const (
 type pclt struct{}
 
 type saveArgs struct {
-	cmd *flag.FlagSet
+	cmd  *flag.FlagSet
 	user *user.User
 
 	env  bool
@@ -56,11 +56,24 @@ func (s *saveArgs) defaultSave() {
 }
 
 type createArgs struct {
-	cmd *flag.FlagSet
+	cmd  *flag.FlagSet
 	user *user.User
 
 	project string
 	path    string
+}
+
+func (c *createArgs) init() {
+	project := c.cmd.String("pn", "default", "Set using project template.")
+
+	_ = c.cmd.Parse(os.Args[2:])
+
+	c.project = *project
+	c.path = c.cmd.Arg(0)
+
+	if c.project == "" || c.path == "" {
+		log.Fatal("Error: Not enough to run this command.")
+	}
 }
 
 func (c *createArgs) defaultCreate() {
@@ -81,19 +94,6 @@ func (c *createArgs) springCreate() {
 	m.downloadFile()
 }
 
-func (c *createArgs) init() {
-	project := c.cmd.String("pn", "default", "Set using project template.")
-
-	_ = c.cmd.Parse(os.Args[2:])
-
-	c.project = *project
-	c.path = c.cmd.Arg(0)
-
-	if c.project == "" || c.path == "" {
-		log.Fatal("Error: Not enough to run this command.")
-	}
-}
-
 type listArgs struct {
 	user *user.User
 }
@@ -112,9 +112,49 @@ func (l *listArgs) projectList() {
 	}
 }
 
+type removeArgs struct {
+	cmd      *flag.FlagSet
+	user     *user.User
+
+	project string
+}
+
+func (r *removeArgs) init() {
+	_ = r.cmd.Parse(os.Args[2:])
+
+	r.project = r.cmd.Arg(0)
+	if r.project == "" {
+		log.Fatalf("Please enter project name for deleting.")
+	}
+}
+
+func (r removeArgs) projectRemove() {
+	path := r.user.HomeDir + projectDir + r.project
+
+	dirRead, _ := os.Open(path)
+	dirFiles, _ := dirRead.Readdir(0)
+
+	for index := range dirFiles {
+		file := dirFiles[index]
+
+		name := file.Name()
+		fullPath := path + "/" + name
+
+		os.Remove(fullPath)
+	}
+	err := os.Remove(r.user.HomeDir + projectDir + r.project)
+	if err != nil {
+		log.Fatalf("Error: %v", err)
+	}
+
+	log.Printf("%s is removed", r.project)
+}
+
 func (p *pclt) init() {
 	createCmd := flag.NewFlagSet("create", flag.ExitOnError)
 	saveCmd := flag.NewFlagSet("save", flag.ExitOnError)
+	removeCmd := flag.NewFlagSet("remove", flag.ExitOnError)
+	rmCmd := flag.NewFlagSet("rm", flag.ExitOnError)
 
 	currentUser, err := user.Current()
 	if err != nil {
@@ -151,6 +191,21 @@ func (p *pclt) init() {
 		list.user = currentUser
 		list.projectList()
 
+	case "remove":
+		var remove removeArgs
+
+		remove.cmd = removeCmd
+		remove.init()
+		remove.projectRemove()
+
+	case "rm":
+		var remove removeArgs
+
+		remove.cmd = rmCmd
+		remove.user = currentUser
+		remove.init()
+		remove.projectRemove()
+
 	case "-help":
 		help()
 
@@ -164,19 +219,18 @@ func main() {
 	p.init()
 }
 
-
 func help() {
 	fmt.Println("List of commands")
 	fmt.Println("\n- pclt create:")
 	fmt.Println("\tpclt create -<project name> <path>")
 	fmt.Println("\tIntroduce")
-	fmt.Println("\t\t - creating projects by using saved project template or supported project package")
+	fmt.Println("\t\t- creating projects by using saved project template or supported project package")
 	fmt.Println("\tExample usage")
 	fmt.Println("\t\t- pclt create -pn spring ./")
 	fmt.Println("\n\n- pclt save:")
 	fmt.Println("\tpclt save -<environment> <project name> <path>")
 	fmt.Println("\tIntroduce")
-	fmt.Println("\t\t - saving projects what on this directory.")
+	fmt.Println("\t\t- saving projects what on this directory.")
 	fmt.Println("\tExample usage")
 	fmt.Println("\t\t- pclt save -e -name elephant ./")
 }
