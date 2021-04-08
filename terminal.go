@@ -15,38 +15,89 @@ type model struct {
 	step     int
 }
 
-type selector map[int]string
+type selector struct {
+	choice string
+	value string
+}
 
 var results map[int]string
-var steps = map[int]selector{
+var steps = map[int][]selector{
 	0: {
-		0: "Maven Project",
-		1: "Gradle Project",
+		{
+			 choice: "Maven Project",
+			 value: "maven-project",
+		},
+		1: {
+			choice: "Gradle Project",
+			value: "gradle-project",
+		},
 	},
 	1: {
-		0: "Java",
-		1: "Kotlin",
-		2: "Groovy",
+		0: {
+			choice: "Java",
+			value: "java",
+		},
+		1: {
+			choice: "Kotlin",
+			value: "kotlin",
+		},
+		2: {
+			choice: "Groovy",
+			value: "groovy",
+		},
 	},
 	2: {
-		0: "2.4.4.RELEASE",
-		1: "2.5.0.BUILD-SNAPSHOT",
-		2: "2.5.0.M3",
-		3: "2.4.5.BUILD-SNAPSHOT",
-		4: "2.3.10.BUILD-SNAPSHOT",
-		5: "2.3.9.RELEASE",
+		0: {
+			choice: "2.4.4",
+			value: "2.4.4.RELEASE",
+		},
+		1: {
+			choice: "2.5.0 (SNAPSHOT)",
+			value: "2.5.0.BUILD-SNAPSHOT",
+		},
+		2: {
+			choice: "2.5.0 (M3)",
+			value: "2.5.0.M3",
+		},
+		3: {
+			choice: "2.4.5 (SNAPSHOT)",
+			value: "2.4.5.BUILD-SNAPSHOT",
+		},
+		4: {
+			choice: "2.3.10 (SNAPSHOT)",
+			value: "2.3.10.BUILD-SNAPSHOT",
+		},
+		5: {
+			choice: "2.3.9",
+			value: "2.3.9.RELEASE",
+		},
 	},
 	/*
 		Steps that setting names.
 	*/
 	8: {
-		0: "jar",
-		1: "war",
+		0: {
+			choice: "JAR",
+			value: "jar",
+		},
+		1: {
+			choice: "WAR",
+			value: "war",
+		},
 	},
 	9: {
-		0: "16",
-		1: "11",
-		2: "8",
+		0: {
+			choice: "16",
+			value: "16",
+		},
+		1: {
+			choice: "11",
+			value: "11",
+		},
+		2: {
+			choice: "8",
+			value: "8",
+		},
 	},
 }
 
@@ -60,7 +111,6 @@ var guide = map[int]string{
 	7: "Please enter your package name",
 	8: "Please select packaging ways to use",
 	9: "Please select java version to use",
-	10: "Please select dependencies to use",
 }
 
 var dValue = map[int]string {
@@ -86,7 +136,7 @@ func (m *model) initMenu() {
 	m.textInput = ti
 	m.selected = map[int]struct{}{}
 	for _, choice := range steps[m.step] {
-		m.choices = append(m.choices, choice)
+		m.choices = append(m.choices, choice.choice)
 	}
 }
 
@@ -121,12 +171,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 
 				delete(m.selected, m.cursor)
-			} else if m.step > 10 {
+			} else if m.step > 9 {
 				for i, result := range results {
 					print(i, ":", result, "\n")
 				}
 			} else {
-				results[m.step] = steps[m.step][m.cursor]
+				results[m.step] = steps[m.step][m.cursor].value
 				delete(m.selected, m.cursor)
 			}
 
