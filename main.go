@@ -29,7 +29,7 @@ type saveArgs struct {
 
 func (s *saveArgs) init() {
 	env := s.cmd.Bool("e", false, "Decides saving .env file to project template.")
-	s.cmd.String("name", "", "Decides will be saved project name")
+	name := s.cmd.String("name", "", "Decides will be saved project name")
 
 	_ = s.cmd.Parse(os.Args[2:])
 
@@ -37,6 +37,8 @@ func (s *saveArgs) init() {
 		path, _ := os.Getwd()
 		s.path = path
 	}
+
+	s.name = *name
 
 	if s.name == "" {
 		path, _ := os.Getwd()
