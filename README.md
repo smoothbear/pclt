@@ -40,3 +40,14 @@
 ## About The Project
 
 This project is a tool for creating projects.
+
+
+
+## Usage
+
+This paragraph explains how to use this program.
+
+### Viewing project template list
+
+<img width="800" alt="pclt list" src="images/pclt-list.gif">
+
