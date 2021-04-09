@@ -51,3 +51,15 @@ This paragraph explains how to use this program.
 
 <img width="800" alt="pclt list" src="images/pclt-list.gif">
 
+### Create (Other case)
+
+* Spring Initializr
+
+  ```shell
+  pclt create -pn spring-init ./
+  ```
+
+  
+
+  <img width="800" alt="pclt list" src="images/pclt-spring-initializr.gif">
+
