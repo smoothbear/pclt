@@ -55,6 +55,11 @@ func (s *saveArgs) defaultSave() {
 	}
 
 	err = copy.Copy(s.path, currentUser.HomeDir+projectDir+s.name)
+	if err != nil {
+		log.Fatalf("Error: %v", err)
+	}
+
+	log.Printf("%s has been saved.", s.name)
 }
 
 type createArgs struct {
