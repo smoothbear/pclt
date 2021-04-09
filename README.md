@@ -3,6 +3,7 @@
 <p align="center">
   <h3 align="center">
     Project Command Line Tool
+</h3>
     <p align="center">
       A comfortable tools to start your projects!
       <br />
@@ -38,4 +39,4 @@
 
 ## About The Project
 
-This project is helping with creating projects.
+This project is a tool for creating projects.
