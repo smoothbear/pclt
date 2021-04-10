@@ -47,9 +47,11 @@ This project is a tool for creating projects.
 
 This paragraph explains how to use this program.
 
-### Viewing project template list
+### View project template list
 
 <img width="800" alt="pclt list" src="images/pclt-list.gif">
+
+### Create
 
 ### Create (Other case)
 
@@ -63,3 +65,8 @@ This paragraph explains how to use this program.
 
   <img width="800" alt="pclt list" src="images/pclt-spring-initializr.gif">
 
+### Delete
+
+### List
+
+### Save
