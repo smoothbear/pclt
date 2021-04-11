@@ -192,7 +192,7 @@ func (p *pclt) init() {
 		switch create.project {
 		case "spring-init":
 			create.springCreate()
-		case "git":
+		case "github":
 			create.githubCreate()
 		default:
 			create.defaultCreate()
