@@ -5,6 +5,7 @@ import (
 	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/otiai10/copy"
+	git "gopkg.in/src-d/go-git.v4"
 	"io/ioutil"
 	"log"
 	"os"
@@ -25,6 +26,12 @@ type saveArgs struct {
 	env  bool
 	name string
 	path string
+}
+
+func checkErr(err error) {
+	if err != nil {
+		log.Fatalf("Error: %v", err)
+	}
 }
 
 func (s *saveArgs) init() {
@@ -50,14 +57,10 @@ func (s *saveArgs) init() {
 
 func (s *saveArgs) defaultSave() {
 	currentUser, err := user.Current()
-	if err != nil {
-		log.Fatalf("Error: %v", currentUser)
-	}
+	checkErr(err)
 
 	err = copy.Copy(s.path, currentUser.HomeDir+projectDir+s.name)
-	if err != nil {
-		log.Fatalf("Error: %v", err)
-	}
+	checkErr(err)
 
 	log.Printf("%s has been saved.", s.name)
 }
@@ -85,9 +88,7 @@ func (c *createArgs) init() {
 
 func (c *createArgs) defaultCreate() {
 	err := copy.Copy(c.user.HomeDir+projectDir+c.project, c.path+c.project)
-	if err != nil {
-		log.Fatalf("Error: %v", err)
-	}
+	checkErr(err)
 }
 
 func (c *createArgs) springCreate() {
@@ -101,15 +102,39 @@ func (c *createArgs) springCreate() {
 	m.downloadFile()
 }
 
+func (c *createArgs) githubCreate() {
+	var name string
+	fmt.Printf("Enter name/github repository name.")
+	_, _ = fmt.Scanf("%s", &name)
+
+	path, _ := os.Getwd()
+
+	_, err := git.PlainClone(path + "/" + name, false, &git.CloneOptions{
+		URL: fmt.Sprintf("https://github.com/%s", name),
+		Progress: os.Stdout,
+	})
+	checkErr(err)
+
+	fmt.Printf("Enter your project name to use.")
+	var pn string
+	_, _ = fmt.Scanf("%s", &pn)
+	err = os.Rename(path + "/" + name, path + "/" + pn)
+	checkErr(err)
+
+	repository, err := git.PlainOpen(path + "/" + name)
+	checkErr(err)
+
+	err = repository.DeleteRemote("origin")
+	fmt.Printf("Repository is successfully created!\nname: %s", name)
+}
+
 type listArgs struct {
 	user *user.User
 }
 
 func (l *listArgs) projectList() {
 	files, err := ioutil.ReadDir(l.user.HomeDir + projectDir)
-	if err != nil {
-		log.Fatalf("Error: %v", err)
-	}
+	checkErr(err)
 
 	fmt.Printf("NAME                         SAVED_DATE         SIZE\n")
 
@@ -139,9 +164,7 @@ func (r removeArgs) projectRemove() {
 	path := r.user.HomeDir + projectDir + r.project
 
 	err := os.RemoveAll(path)
-	if err != nil {
-		log.Fatalf("Error: %v", err)
-	}
+	checkErr(err)
 
 	log.Printf("%s is removed", r.project)
 }
@@ -153,9 +176,7 @@ func (p *pclt) init() {
 	rmCmd := flag.NewFlagSet("rm", flag.ExitOnError)
 
 	currentUser, err := user.Current()
-	if err != nil {
-		log.Fatalf("Error: %v", currentUser)
-	}
+	checkErr(err)
 
 	if len(os.Args) < 2 {
 		log.Fatal("expected subcommands.")
@@ -171,6 +192,8 @@ func (p *pclt) init() {
 		switch create.project {
 		case "spring-init":
 			create.springCreate()
+		case "git":
+			create.githubCreate()
 		default:
 			create.defaultCreate()
 		}

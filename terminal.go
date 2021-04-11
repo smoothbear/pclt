@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/artdarek/go-unzip"
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/dustin/go-humanize"
 	"io"
