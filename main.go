@@ -11,6 +11,7 @@ import (
 	"os"
 	user "os/user"
 	"path/filepath"
+	"strings"
 )
 
 const (
@@ -104,28 +105,31 @@ func (c *createArgs) springCreate() {
 
 func (c *createArgs) githubCreate() {
 	var name string
-	fmt.Printf("Enter name/github repository name.")
+	fmt.Printf("Enter name/github repository name: ")
 	_, _ = fmt.Scanf("%s", &name)
 
-	path, _ := os.Getwd()
-
-	_, err := git.PlainClone(path + "/" + name, false, &git.CloneOptions{
+	_, err := git.PlainClone(c.path + "/" + name, false, &git.CloneOptions{
 		URL: fmt.Sprintf("https://github.com/%s", name),
 		Progress: os.Stdout,
 	})
 	checkErr(err)
 
-	fmt.Printf("Enter your project name to use.")
+	fmt.Println("------------------------------------------------")
+	fmt.Printf("Enter your project name to use: ")
 	var pn string
 	_, _ = fmt.Scanf("%s", &pn)
-	err = os.Rename(path + "/" + name, path + "/" + pn)
+	err = os.Rename(c.path + "/" + name, c.path + "/" + pn)
 	checkErr(err)
 
-	repository, err := git.PlainOpen(path + "/" + name)
+	str := strings.Split(name, "/")
+	err = os.RemoveAll(c.path + "/" + str[0])
+
+	repository, err := git.PlainOpen(c.path + "/" + pn)
 	checkErr(err)
 
 	err = repository.DeleteRemote("origin")
-	fmt.Printf("Repository is successfully created!\nname: %s", name)
+	fmt.Println("------------------------------------------------")
+	fmt.Printf("Repository is successfully created!\nname: %s\n", name)
 }
 
 type listArgs struct {
