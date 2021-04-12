@@ -49,9 +49,17 @@ This paragraph explains how to use this program.
 
 ### View project template list
 
+```shell
+pclt list
+```
 <img width="800" alt="pclt list" src="images/pclt-list.gif">
 
 ### Create
+
+```shell
+pclt create -pn <project-name>
+```
+<img width="800" alt="pclt create" src="images/pclt-create-normal.gif">
 
 ### Create (Other case)
 
@@ -61,12 +69,27 @@ This paragraph explains how to use this program.
   pclt create -pn spring-init ./
   ```
 
-  
+  <img width="800" alt="pclt spring" src="images/pclt-spring-initializr.gif">
 
-  <img width="800" alt="pclt list" src="images/pclt-spring-initializr.gif">
+* Github
+
+  ```shell
+  pclt create-pn github ./
+  ```
+  <img width="800" alt="pclt github" src="images/pclt-create-github.gif">
 
 ### Delete
 
-### List
+  ```shell
+  pclt rm <project-name>
+  ```
+  OR
+  ```shell
+  pclt remove <project-name>
+  ```
 
 ### Save
+
+  ```shell
+  pclt save
+  ```
