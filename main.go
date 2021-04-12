@@ -124,10 +124,9 @@ func (c *createArgs) githubCreate() {
 	str := strings.Split(name, "/")
 	err = os.RemoveAll(c.path + "/" + str[0])
 
-	repository, err := git.PlainOpen(c.path + "/" + pn)
+	err = os.RemoveAll(c.path + "/" + pn + "/" + ".git")
 	checkErr(err)
 
-	err = repository.DeleteRemote("origin")
 	fmt.Println("------------------------------------------------")
 	fmt.Printf("Repository is successfully created!\nname: %s\n", name)
 }
