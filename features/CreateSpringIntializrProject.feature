@@ -3,3 +3,5 @@ Feature: Create spring intializr project
     Then: Request to spring initializr
   Scenarios: User doesn't have chosen all choices
     Then: Default Value
+  Scenarios: User entered invalid values
+    Then: Print error traceback
