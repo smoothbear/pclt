@@ -41,6 +41,11 @@
 
 This project is a tool for creating projects.
 
+## Install
+```
+brew tap smoothbear/cli
+brew install smoothbear/cli/pclt
+```
 
 
 ## Usage
