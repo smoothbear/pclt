@@ -5,3 +5,7 @@ Feature: Create spring intializr project
     Then: Default Value
   Scenarios: User entered invalid values
     Then: Print error traceback
+
+Feature: Create github template project
+  Scenarios: User has not entered answers
+    Then: Git clone
